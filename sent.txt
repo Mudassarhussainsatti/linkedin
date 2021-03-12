@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 Hatum Hussain,https://www.linkedin.com/in/hatum-hussain-666912113
 Rafi Ur Rehman,https://www.linkedin.com/in/ACoAABIMvFwBsEY4C8IGd3iBlifZOd8shLVjfQ0
 Maha Hashmi,https://www.linkedin.com/in/maha-hashmi-b4ba7012b
@@ -59,6 +60,11 @@ Saad Maqbool,https://www.linkedin.com/in/saad-maqbool-34545160
 ,https://www.linkedin.com/in/urooj-javed-a56aa4160
 MOEEZ UL H.,https://www.linkedin.com/in/mesyedmoeez
 Asad javed,https://www.linkedin.com/in/asad-javed-252336112
+=======
+Asma Rahim,https://www.linkedin.com/in/asma-rahim
+Sumair Saeed,https://www.linkedin.com/in/sumair-saeed
+Zaib Khan,https://www.linkedin.com/in/zaib-khan-571404132
+>>>>>>> 2eba4d85a9a961147b227a7e81743d3fce3ff15c
 =======
 Asma Rahim,https://www.linkedin.com/in/asma-rahim
 Sumair Saeed,https://www.linkedin.com/in/sumair-saeed
