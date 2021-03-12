@@ -6,33 +6,61 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.action_chains import ActionChains
 
-
+totalInvites = 0
+page=2
+searchQuery =''
+sentTo = []
 def initiateConnectionInvite(browser):
+    global totalInvites
+    global page
+    global searchQuery
+    global sentTo
     with open('visited.txt') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
-        totalInvites = 0;
+
         for row in csv_reader:
-            if totalInvites == 25:
-                with open('visited.txt', 'w+') as file:
-                    file.close()
-                logout(browser)
-                break
+         if line_count == 0:
+            print('Initiating Invites')
+            if(row[2] in sentTo):
+                continue
             else:
-             if line_count == 0:
-                print('Initiating Invites')
-                sent = sendConnectionInivite(totalInvites, row[1], row[2], browser)
-                if(sent):
-                    totalInvites += 1
-                else:
-                    line_count += 1
+             sentTo.append(row[2])
+             sent = sendConnectionInivite(totalInvites, row[1], row[2], browser)
+             if(sent):
+                 totalInvites += 1
+                 if totalInvites >= 5:
+                     break
+                 else:
+                     print()
              else:
-                sent = sendConnectionInivite(totalInvites, row[1], row[2], browser)
-                if (sent):
-                    totalInvites += 1
-                else:
+                line_count += 1
+         else:
+            if(row[2] in sentTo):
+                continue
+            else:
+             sentTo.append(row[2])
+             sent = sendConnectionInivite(totalInvites, row[1], row[2], browser)
+             if (sent):
+                 sentTo.append(row[2])
+                 totalInvites += 1
+                 if totalInvites >= 5:
+                  break
+                 else:
+                    print()
+             else:
                     line_count += 1
-        print('ALL-DONE')
+        print('Total Invites sent so far',totalInvites)
+        if totalInvites >= 5:
+            with open('visited.txt', 'w+') as file:
+                file.close()
+            logout(browser)
+            print('ALL-DONE')
+        else:
+            with open('visited.txt', 'w+') as file:
+                file.close()
+            page +=1
+            initiateSearch(browser,searchQuery,page)
 
 def logout(browser):
     browser.get('https://www.linkedin.com/m/logout')
@@ -46,20 +74,41 @@ def sendConnectionInivite(number,name,link,browser):
      actions = ActionChains(browser)
      actions.click(element)
      actions.perform()
-     element_1 = browser.find_element_by_class_name('ml1').click()
-     actions = ActionChains(browser)
-     actions.click(element_1)
-     actions.perform()
-     strsp = name.split("View")
-     with open('sent.txt', 'a', newline='\n') as file:
-         writer = csv.writer(file)
-         writer.writerow([strsp[0], link])
-     print('Sent to',strsp[0])
-     return True
+     try:
+         element = browser.find_element_by_class_name("msg-form__contenteditable")
+         actions = ActionChains(browser)
+         actions.click(element)
+         actions.perform()
+         element = browser.find_element_by_id('email')
+         actions = ActionChains(browser)
+         actions.click(element)
+         actions.perform()
+         print('Error')
+         return False
+     except:
+         element_1 = browser.find_element_by_class_name('ml1').click()
+         actions = ActionChains(browser)
+         actions.click(element_1)
+         actions.perform()
+         strsp = name.split("View")
+         with open('sent.txt', 'a', newline='\n') as file:
+            writer = csv.writer(file)
+            writer.writerow([strsp[0], link])
+         print('Sent to',strsp[0])
+         try:
+             element = browser.find_element_by_class_name('ip-fuse-limit-alert__warning')
+             print('You’ve reached the weekly invitation limit')
+             return False
+         except:
+             print()
+         return True
     except:
         print('Error')
         return False
-def initiateSearch(browser,url):
+def initiateSearch(browser,sq,page):
+    print('Getting page ',page)
+    url = 'https://www.linkedin.com/search/results/people/?keywords=' + sq + '&origin=SWITCH_SEARCH_VERTICAL&page='+str(page)
+    print(url)
     browser.get(url)
     print('Searching ........')
     soup = BeautifulSoup(browser.page_source)
@@ -79,7 +128,7 @@ def initiateSearch(browser,url):
                 else:
                     n = n + 1
                     writer.writerow([n, profile_name.strip(), profile_link.strip()])
-
+    initiateConnectionInvite(browser)
 
 
 #browser = webdriver.Chrome('chromedriver.exe')
@@ -89,7 +138,18 @@ chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 chrome_options.add_argument('window-size=1920x1480')
 browser = webdriver.Chrome(options=chrome_options, executable_path='/project/chromedriver')
+with open('sent.txt') as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter=',')
+    line_count = 0
+
+    for row in csv_reader:
+        sentTo.append(row[1])
+
+with open('sent.txt', 'a', newline='\n') as file:
+    writer = csv.writer(file)
+    writer.writerow('------------------')
 userInput = sys.argv[1]
+print("userInput",userInput)
 browser.get('https://linkedin.com/uas/login')
 upArr = userInput.split("|")
 searchQuery = upArr[2]
@@ -110,12 +170,6 @@ try:
     print('Sent Request')
 except:
     print()
-url1 = 'https://www.linkedin.com/search/results/people/?keywords='+searchQuery+'&origin=SWITCH_SEARCH_VERTICAL'
-url2 = 'https://www.linkedin.com/search/results/people/?keywords='+searchQuery+'&origin=SWITCH_SEARCH_VERTICAL&page=2'
-url3 = 'https://www.linkedin.com/search/results/people/?keywords='+searchQuery+'&origin=SWITCH_SEARCH_VERTICAL&page=3'
-url4 = 'https://www.linkedin.com/search/results/people/?keywords='+searchQuery+'&origin=SWITCH_SEARCH_VERTICAL&page=4'
-initiateSearch(browser, url1)
-initiateSearch(browser, url2)
-initiateSearch(browser, url3)
-initiateSearch(browser, url4)
-initiateConnectionInvite(browser)
+with open('visited.txt', 'w+') as file:
+    file.close()
+initiateSearch(browser,searchQuery,page)
